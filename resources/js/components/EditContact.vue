@@ -7,8 +7,7 @@
             <div class="card-body">
                 <div class="col-md-6 offset-md-3">
                     <form
-                        id="validateForm"
-                        @submit.prevent="saveContact"
+                        @submit.prevent="updateContact"
                         enctype="multipart/form-data"
                         novalidate
                     >
@@ -72,6 +71,17 @@
                                 rows="5"
                             ></textarea>
                         </div>
+                        <div class="form-group" v-if="contact.image">
+                            <!-- <img :src="`${url + '/'+contact.image}`" alt="" /> -->
+                            <img
+                                :src="`${
+                                    url + '/images/gallery/' + contact.image
+                                }`"
+                                alt="image"
+                                width="150"
+                                height="150"
+                            />
+                        </div>
                         <div class="custom-file mb-3">
                             <label for="validatedCustomFile" class="form-label"
                                 >Choose Photo</label
@@ -80,8 +90,8 @@
                                 class="form-control"
                                 type="file"
                                 name="image"
+                                v-on:change="updateImageChange"
                                 id="validatedCustomFile"
-                                v-on:change="saveImage"
                             />
                         </div>
                         <button class="btn btn-primary mt-4">Submit</button>
@@ -105,8 +115,19 @@ export default {
             errors: [],
         };
     },
+    created() {
+        this.loadData();
+    },
     methods: {
-        saveContact() {
+        loadData() {
+            let url = this.url + `/api/get_contact/${this.$route.params.id}`;
+            this.axios.get(url).then((response) => {
+                this.contact = response.data;
+                console.log(this.contact);
+            });
+        },
+
+        updateContact() {
             this.errors = [];
             if (!this.contact.name) {
                 this.errors.push("Name is required");
@@ -130,25 +151,24 @@ export default {
                 formData.append("designation", this.contact.designation);
                 formData.append("bio", this.contact.bio);
                 formData.append("contact_no", this.contact.contact_no);
-                formData.append("image", this.image);
-                let url = this.url + "/api/save_contact";
+                if (this.image) {
+                    formData.append("image", this.image);
+                }
+
+                let url =
+                    this.url + `/api/update_contact/${this.$route.params.id}`;
 
                 this.axios
                     .post(url, formData)
                     .then((response) => {
                         if (response.status) {
-                            document.getElementById("name").value = "";
-                            document.getElementById("email").value = "";
-                            document.getElementById("designation").value = "";
-                            document.getElementById("bio").value = "";
-                            document.getElementById("contact_no").value = "";
-                            document.getElementById(
-                                "validatedCustomFile"
-                            ).value = "";
                             this.$utils.showSuccess(
                                 "success",
                                 response.message
                             );
+                            this.$router.push({
+                                name: "/",
+                            });
                         } else {
                             this.$utils.showError("Error", response.message);
                         }
@@ -158,13 +178,13 @@ export default {
                     });
             }
         },
-        saveImage(e) {
+        updateImageChange(e) {
             this.image = e.target.files[0];
             console.log(this.image);
         },
     },
     mounted: function () {
-        console.log("Add Contact Component Loaded");
+        console.log("Edit Contact Component Loaded");
     },
 };
 </script>

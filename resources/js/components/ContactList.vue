@@ -15,8 +15,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="contact in contacts" :key="contact.id">
-                        <td scope="row">{{ contact.id }}</td>
+                    <tr v-for="(contact, index) in contacts" :key="index">
+                        <td scope="row">{{ index + 1 }}</td>
                         <td scope="row">{{ contact.name }}</td>
                         <td scope="row">{{ contact.email }}</td>
                         <td scope="row">{{ contact.designation }}</td>
@@ -24,12 +24,23 @@
                         <td scope="row">
                             <img
                                 height="50px"
-                                v-bind:src="contact.image"
+                                :src="'images/gallery/' + contact.image"
                                 alt=""
                             />
                         </td>
                         <td scope="row">
-                            <button class="btn btn-danger btn-sm">
+                            <router-link
+                                :to="{
+                                    name: 'get_contact',
+                                    params: { id: contact.id },
+                                }"
+                                class="btn btn-primary btn-sm"
+                                >Edit</router-link
+                            >
+                            <button
+                                class="btn btn-danger btn-sm"
+                                @click.prevent="deleteContact(contact.id)"
+                            >
                                 Delete
                             </button>
                         </td>
@@ -53,12 +64,25 @@ export default {
     },
     methods: {
         loadData() {
-            // let url = this.url + "/api/getcontacts";
-            const url = `http://127.0.0.1:8000/api/getcontacts`;
+            let url = this.url + "/api/getcontacts";
+            // const url = `http://127.0.0.1:8000/api/getcontacts`;
             this.axios.get(url).then((response) => {
                 this.contacts = response.data;
                 console.log(this.contacts);
             });
+        },
+        deleteContact(id) {
+            if (confirm("are you sure?")) {
+                let url = this.url + `/api/deleteContact/${id}`;
+                this.axios.delete(url).then((response) => {
+                    if (response.status) {
+                        this.loadData();
+                        this.$utils.showSuccess("success", response.message);
+                    } else {
+                        this.$utils.showError("Error", response.message);
+                    }
+                });
+            }
         },
         mounted() {
             console.log("Contact List Component Mounted");

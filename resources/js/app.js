@@ -6,6 +6,7 @@ import App from "./App.vue";
 import Home from "../js/components/Home";
 import ContactList from "../js/components/ContactList";
 import AddContact from "../js/components/AddContact";
+import EditContact from "../js/components/EditContact.vue";
 import utils from "../js/helpers/utilities";
 Vue.prototype.$utils = utils;
 
@@ -34,6 +35,11 @@ const routes = [
         name: "add_contacts",
         path: "/add_contacts",
         component: AddContact,
+    },
+    {
+        name: "get_contact",
+        path: "/get_contact/edit/:id?",
+        component: EditContact,
     },
 ];
 
